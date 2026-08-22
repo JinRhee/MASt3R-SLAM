@@ -270,8 +270,19 @@ class RGBFiles(MonocularDataset):
         super().__init__()
         self.use_calibration = False
         self.dataset_path = pathlib.Path(dataset_path)
-        self.rgb_files = natsorted(list((self.dataset_path).glob("*.png")))
-        self.timestamps = np.arange(0, len(self.rgb_files)).astype(self.dtype) / 30.0
+        self.rgb_files = natsorted(list((self.dataset_path).glob("*.jpg")))
+
+        self.get_timestamp_ns = np.vectorize(get_timestamp_ns)
+        self.timestamps = self.get_timestamp_ns(self.rgb_files)#np.arange(0, len(self.rgb_files)).astype(self.dtype) / 30.0
+
+def get_timestamp_ns(image_file):
+    stem = image_file.stem  # Remove .jpg
+    parts = stem.split('_')
+    
+    sec = int(parts[1])
+    nsec = int(parts[2])
+    timestamp_ns = sec * 1_000_000_000 + nsec
+    return timestamp_ns
 
 
 class Intrinsics:
